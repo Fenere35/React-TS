@@ -1,106 +1,63 @@
-import React from 'react';
-import { Space, Table, Tag } from 'antd';
-import type { ColumnsType } from 'antd/es/table';
-
-interface DataType {
-  key: string;
-  name: string;
-  age: number;
-  address: string;
-  tags: string[];
-  hobby: string;
+import React, { useState, useEffect } from 'react'; 
+import axios from 'axios'; 
+import type { ColumnsType } from 'antd/es/table'; 
+import { Table, Button } from 'antd'; 
+ 
+ 
+interface DataType { 
+  country: string; 
+  name: string; 
 }
+ 
 
-const columns: ColumnsType<DataType> = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-    key: 'name',
-    render: (text) => <a>{text}</a>,
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-    key: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-    key: 'address',
-  },
-  {
-    title: 'Tags',
-    key: 'tags',
-    dataIndex: 'tags',
-    render: (_, { tags }) => (
-      <>
-        {tags.map((tag) => {
-          let color = tag.length > 5 ? 'geekblue' : 'green';
-          if (tag === 'loser') {
-            color = 'volcano';
-          }
-          return (
-            <Tag color={color} key={tag}>
-              {tag.toUpperCase()}
-            </Tag>
-          );
-        })}
-      </>
-    ),
-  },
-  {
-    title: 'Action',
-    key: 'action',
-    render: (_, record) => (
-      <Space size="middle">
-        <a>Invite {record.name}</a>
-        <a>Delete</a>
-      </Space>
-    ),
-  },
-  {
-    title: 'Hobby',
-    key: 'hobby',
-    dataIndex: 'hobby',
-  },
-];
-
-const data: DataType[] = [
-  {
-    key: '1',
-    name: 'John Brown',
-    age: 32,
-    address: 'New York No. 1 Lake Park',
-    tags: ['nice', 'developer'],
-    hobby: 'Football',
-  },
-  {
-    key: '2',
-    name: 'Jim Green',
-    age: 42,
-    address: 'London No. 1 Lake Park',
-    tags: ['loser'],
-    hobby: 'Basketball',
-  },
-  {
-    key: '3',
-    name: 'Joe Black',
-    age: 32,
-    address: 'Sydney No. 1 Lake Park',
-    tags: ['cool', 'teacher'],
-    hobby: 'Handball',
-  },
-  {
-    key: '4',
-    name: 'Josh White',
-    age: 52,
-    address: 'Liverpool',
-    tags: ['old'],
-    hobby: 'Water polo',
-  },
-];
-
-const App: React.FC = () => <Table columns={columns} dataSource={data} />;
-
-export default App;
-
+const columns: ColumnsType<DataType> = [ 
+  { 
+    title: 'Страна', 
+    dataIndex: 'country', 
+    key: 'country', 
+  }, 
+  { 
+    title: 'Название школы', 
+    dataIndex: 'name', 
+    key: 'name', 
+  }
+]; 
+ 
+ 
+const TablePagination: React.FC = () => { 
+  const [page, setPage] = useState<number>(1); 
+  const [dataSource, setDataSource] = useState<DataType[]>([]); 
+ 
+  const getUniversity = async (page: number, limit: number) => { 
+    try { 
+ 
+      const offset = (page - 1) * limit; 
+      const response = await axios.get( 
+        `http://universities.hipolabs.com/search?offset=${offset}&limit=${limit}`
+      ); 
+      setDataSource(response.data); 
+    } catch (error) { 
+      console.error('Error fetching data:', error); 
+    } 
+  }; 
+ 
+  useEffect(() => { 
+    getUniversity(page, 10); 
+ 
+  }, [page]); 
+ 
+  return ( 
+    <> 
+      <Table dataSource={dataSource} columns={columns} pagination={false} /> 
+      <Button onClick={() => setPage(page - 1)} disabled={page === 1}> 
+        Назад 
+      </Button> 
+      <Button onClick={() => setPage(page + 1)}> 
+        Вперед 
+      </Button> 
+      <p>{page}</p>
+    </> 
+  ); 
+} 
+ 
+export default TablePagination;
